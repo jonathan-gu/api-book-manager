@@ -90,7 +90,7 @@ class BookController extends AbstractController
         ], 400);
     }
 
-    #[Route('/{id}', name: 'app_book_update', methods:['Put'])]
+    #[Route('/{id}', name: 'app_book_update', methods:['PUT'])]
     public function update($id, Request $request, BookRepository $bookRepository): JsonResponse
     {
         $request_decode = json_decode($request->getContent());
@@ -141,6 +141,36 @@ class BookController extends AbstractController
             $book->setPublicationYear($request_decode->publication_year);
         }
         $bookRepository->save($book, true);
+        return new JsonResponse([
+            "succes" => true,
+            "data" => [
+                "book" => [
+                    "id" => $book->getId(),
+                    "title" => $book->getTitle(),
+                    "author" => $book->getAuthor(),
+                    "publication_year" => $book->getPublicationYear()
+                ]
+            ]
+        ], 200);
+    }
+
+    #[Route('/{id}', name: 'app_book_delete', methods:['DELETE'])]
+    public function delete($id, BookRepository $bookRepository): JsonResponse
+    {
+        if (!filter_var($id, FILTER_VALIDATE_INT)) {
+            return new JsonResponse([
+                "succes" => false,
+                "error" => "Bad Request"
+            ], 400);
+        }
+        $book = $bookRepository->findOneById($id);
+        if ($book == null) {
+            return new JsonResponse([
+                "succes" => false,
+                "error" => "The book was not found"
+            ], 404);
+        }
+        $bookRepository->remove($book, true);
         return new JsonResponse([
             "succes" => true,
             "data" => [
