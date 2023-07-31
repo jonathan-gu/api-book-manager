@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Book;
 use App\Repository\BookRepository;
+use PhpParser\Node\Expr\Cast\Int_;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,7 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class BookController extends AbstractController
 {
     #[Route('/', name: 'app_book_get_all', methods:['GET'])]
-    public function get_all(Request $request, BookRepository $bookRepository): JsonResponse
+    public function get_all(BookRepository $bookRepository): JsonResponse
     {
         $response = new JsonResponse();
         $books = $bookRepository->findAll();
@@ -29,7 +30,37 @@ class BookController extends AbstractController
             "data" => [
                 "books" => $booksArray
             ]
-        ], 201, []);
+        ], 200, []);
+    }
+
+    #[Route('/{id}', name: 'app_book_get_by_id', methods:['GET'])]
+    public function get_by_id($id, BookRepository $bookRepository): JsonResponse
+    {
+        $response = new JsonResponse();
+        if (!filter_var($id, FILTER_VALIDATE_INT)) {
+            return new JsonResponse([
+                "succes" => false,
+                "error" => "Bad Request"
+            ], 400);
+        }
+        $book = $bookRepository->findOneById($id);
+        if ($book == null) {
+            return new JsonResponse([
+                "succes" => false,
+                "error" => "The book was not found"
+            ], 404);
+        }
+        return new JsonResponse([
+            "succes" => true,
+            "data" => [
+                "book" => [
+                    "id" => $book->getId(),
+                    "title" => $book->getTitle(),
+                    "author" => $book->getAuthor(),
+                    "publication_year" => $book->getPublicationYear()
+                ]
+            ]
+        ], 200, []);
     }
 
     #[Route('/', name: 'app_book_add', methods:['POST'])]
@@ -42,15 +73,15 @@ class BookController extends AbstractController
             $book->setAuthor($request_decode->author);
             $book->setPublicationYear($request_decode->publication_year);
             $bookRepository->save($book, true);
-            $LastBook = $bookRepository->findLastBook();
+            $lastBook = $bookRepository->findLastBook();
             return new JsonResponse([
                 "succes" => true,
                 "data" => [
                     "book" => [
-                        "id" => $LastBook->getId(),
-                        "title" => $LastBook->getTitle(),
-                        "author" => $LastBook->getAuthor(),
-                        "publication_year" => $LastBook->getPublicationYear()
+                        "id" => $lastBook->getId(),
+                        "title" => $lastBook->getTitle(),
+                        "author" => $lastBook->getAuthor(),
+                        "publication_year" => $lastBook->getPublicationYear()
                     ]
                 ]
             ], 201);
