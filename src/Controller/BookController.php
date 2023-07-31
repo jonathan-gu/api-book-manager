@@ -13,7 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[Route('/api/books')]
 class BookController extends AbstractController
 {
-    #[Route('/', name: 'app_book_get_all', methods:['GET'])]
+    #[Route('', name: 'app_book_get_all', methods:['GET'])]
     public function get_all(BookRepository $bookRepository): JsonResponse
     {
         $books = $bookRepository->findAll();
@@ -61,7 +61,7 @@ class BookController extends AbstractController
         ], 200);
     }
 
-    #[Route('/', name: 'app_book_add', methods:['POST'])]
+    #[Route('', name: 'app_book_add', methods:['POST'])]
     public function add(Request $request, BookRepository $bookRepository): JsonResponse
     {
         $request_decode = json_decode($request->getContent());
