@@ -12,6 +12,26 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[Route('/api/books')]
 class BookController extends AbstractController
 {
+    #[Route('/', name: 'app_book_get_all', methods:['GET'])]
+    public function get_all(Request $request, BookRepository $bookRepository): JsonResponse
+    {
+        $response = new JsonResponse();
+        $books = $bookRepository->findAll();
+        $booksArray = [];
+        foreach ($books as $key => $book) {
+            $booksArray[$key]["id"] = $book->getId();
+            $booksArray[$key]["title"] = $book->getTitle();
+            $booksArray[$key]["author"] = $book->getAuthor();
+            $booksArray[$key]["publication_year"] = $book->getPublicationYear();
+        }
+        return new JsonResponse([
+            "succes" => true,
+            "data" => [
+                "books" => $booksArray
+            ]
+        ], 201, []);
+    }
+
     #[Route('/', name: 'app_book_add', methods:['POST'])]
     public function add(Request $request, BookRepository $bookRepository): JsonResponse
     {
@@ -30,7 +50,7 @@ class BookController extends AbstractController
                         "id" => $LastBook->getId(),
                         "title" => $LastBook->getTitle(),
                         "author" => $LastBook->getAuthor(),
-                        "pulication_year" => $LastBook->getPublicationYear()
+                        "publication_year" => $LastBook->getPublicationYear()
                     ]
                 ]
             ], 201);
