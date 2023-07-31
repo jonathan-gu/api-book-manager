@@ -21,6 +21,24 @@ class BookRepository extends ServiceEntityRepository
         parent::__construct($registry, Book::class);
     }
 
+    public function save(Book $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    public function findLastBook(): ?Book
+    {
+        return $this->createQueryBuilder("b")
+            ->orderBy("b.id", "DESC")
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    } 
+
 //    /**
 //     * @return Book[] Returns an array of Book objects
 //     */
